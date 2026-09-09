@@ -1,6 +1,6 @@
 // Study Sync — Service Worker
 // Bumping CACHE_NAME forces old caches to be dropped on the next visit.
-const CACHE_NAME = "study-sync-cache-v1";
+const CACHE_NAME = "study-sync-cache-v2";
 
 const APP_SHELL = [
   "./",
@@ -8,7 +8,10 @@ const APP_SHELL = [
   "./manifest.json",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
-  "./icons/icon-512-maskable.png"
+  "./icons/icon-512-maskable.png",
+  "./icons/apple-touch-icon.png",
+  "./icons/favicon-32.png",
+  "./icons/favicon-16.png"
 ];
 
 // Install: pre-cache the app shell so the app can launch with zero network.
@@ -44,8 +47,9 @@ self.addEventListener("fetch", (event) => {
 
       return fetch(request)
         .then((response) => {
-          // Only cache successful, same-origin responses.
-          if (response && response.status === 200 && response.type === "basic") {
+          // Cache same-origin AND cross-origin (e.g. Google Fonts) successful
+          // responses, so fonts still render once the device goes offline.
+          if (response && (response.ok || response.type === "opaque")) {
             const responseClone = response.clone();
             caches.open(CACHE_NAME).then((cache) => cache.put(request, responseClone));
           }
